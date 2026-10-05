@@ -335,9 +335,9 @@ def nearest_color(pixel, palette):
 
 # FAST NUMPY IMPLEMENTATIONS
 
-def box_blur2(frame: np.ndarray, blockgroesse: int) -> np.ndarray:
+def box_blur2(frame: np.ndarray, box_size: int) -> np.ndarray:
     frame_f = frame.astype(np.float32)
-    blurred = uniform_filter(frame_f, size=(blockgroesse, blockgroesse, 1), mode='nearest')
+    blurred = uniform_filter(frame_f, size=(box_size, box_size, 1), mode='nearest')
     return np.clip(blurred, 0, 255).astype(np.uint8)
 
 
@@ -374,12 +374,12 @@ def clamp(wert):
     return wert
 
 
-def Fuzzy(frame: np.ndarray, blockgroesse: int, t: int, yellow: int) -> np.ndarray:
-    return fuzz(color_split(box_blur2(frame, blockgroesse), t), yellow, 0)
+def Fuzzy(frame: np.ndarray, box_size: int, t: int, yellow: int, ran: int) -> np.ndarray:
+    return fuzz(color_split(box_blur2(frame, box_size), t), yellow, ran)
 
 
-def Fuzzy_v2(frame: np.ndarray, blockgroesse: int, step: int, yellow: int, ran: int) -> np.ndarray:
-    return fuzz(convert_to_nearest(box_blur2(frame, blockgroesse), gray_values(step)), yellow, ran)
+def Fuzzy_v2(frame: np.ndarray, box_size: int, step: int, yellow: int, ran: int) -> np.ndarray:
+    return fuzz(convert_to_nearest(box_blur2(frame, box_size), gray_values(step)), yellow, ran)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -405,18 +405,38 @@ def rgb_values(step):
         ]
     return rgb_values
 
-def gray_values(step):
+def (step):
     rgb_values = [
         (v, v, v)
         for v in range(0, 257, step)
     ]
     return rgb_values
 
-#run_through_filter(Path("in", "badapple.mov"), 0, 6572, Path("why_do_you_hurt_me_in_this_way.mp4"), "Fuzzy", Fuzzy, [16,127,100])
-run_through_filter(Path("in", "badapple.mov"), 0, 6572, Path("why_do_you_hurt_me_in_this_way3.mov"), "Fuzzy", Fuzzy_v2, [1,64,0,0])
+#run_through_filter(Path("in", "badapple.mov"), 0, 6572, Path("why_do_you_hurt_me_in_this_way.mp4"), "Fuzzy", Fuzzy, [16,127,100,0])
+run_through_filter(Path("badapple.mov"), 0, 6572, Path("why_do_you_hurt_me_in_this_way3.mov"), "Fuzzy", Fuzzy_v2, [16,64,0,0])
 # run_through_filter(Path("in", "clip.mov"), 0, 10**9, Path("out", "clip_fuzzy.mov"), "Fuzzy", Fuzzy_v2, [16,64,0,50])
 # showVideoProgress(0.5, "Static", Path("in","bad_apple.mp4"), Path("out","static_apple.mp4"))
 # static_effect(Path("in", "bad_apple.mp4"), Path("test_video_3.mp4"))
+
+# Explenation
+
+#filter(input_path, from_frame, to_frame, output_path, filter_type, filter_version, parameters[x,y,z,a])
+
+# input_path = path from .py file ("subfolder",) "file_name (.mp4 / .mov)"
+# output_path = path from .py file ("subfolder",) "file_name (.mp4 / .mov)"
+
+# from_frame = start frame (from 0)
+# to_frame = end frame
+
+# filter_type = don't change this (unused)
+# filter_version = Fuzzy / Fuzzy_v2; Fuzzy = black and white, Fuzzy_v2 glayscale palette
+
+# x = box blur scan size
+# y = step size in the palette (if you set this too low; it will take ages to finish and the effect will desappear (I have no clue why))
+# z = adds a yellow tint to the video (I have no clue why I even added this)
+# a = adds a random number between -a and +a to very color channel for every pixel (rerolls the number every color channel and pixel), this adds like a fizze effect to the video
+
+
 
 #  _____  __                                                    ______  _____  _____            _     _ _         _   _             _   _     _               
 # |_   _|/ _|                                                  |  ____|/ ____|/ ____|          | |   (_) |       | | | |           | | | |   (_)              
